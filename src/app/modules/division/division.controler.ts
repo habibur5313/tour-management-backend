@@ -2,7 +2,7 @@
 import { NextFunction, Request, Response } from "express"
 import { catchAsync } from "../../utils/catchAsync"
 
-const createTour = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+const createDivision = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 //     const user = await UserServices.createUser(req.body)
 //     sendResponse(res, {
 //         success: true,
@@ -14,7 +14,7 @@ console.log(req,res)
 })
 
 
-export const TourControllers = {
-    createTour,
+export const DivisionControllers = {
+    createDivision,
 
 }
