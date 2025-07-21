@@ -1,5 +1,5 @@
 import { QueryBuilder } from "../../utils/QueryBuilder";
-import { tourSearchableFields } from "./tour.constant";
+import { tourSearchableFields, tourTypeSearchableFields } from "./tour.constant";
 import { ITour, ITourType } from "./tour.interface";
 import { Tour, TourType } from "./tour.model";
 
@@ -89,9 +89,7 @@ const createTour = async (payload: ITour) => {
 // advance way
 const getAllTours = async (query: Record<string, string>) => {
 
-
     const queryBuilder = new QueryBuilder(Tour.find(), query)
-
     const tours = await queryBuilder
         .search(tourSearchableFields)
         .filter()
@@ -111,6 +109,13 @@ const getAllTours = async (query: Record<string, string>) => {
         meta
     }
 }
+
+const getSingleTour = async (slug: string) => {
+    const tour = await Tour.findOne({ slug });
+    return {
+        data: tour,
+    }
+};
 
 const updateTour = async (id: string, payload: Partial<ITour>) => {
 
@@ -132,15 +137,37 @@ const deleteTour = async (id: string) => {
 const createTourType = async (payload: ITourType) => {
     const name = payload
     const existingTourType = await TourType.findOne({ name });
-console.log(existingTourType,payload)
     if (existingTourType) {
         throw new Error("Tour type already exists.");
     }
 
     return await TourType.create({ name });
 };
-const getAllTourTypes = async () => {
-    return await TourType.find();
+const getAllTourTypes = async (query: Record<string, string>) => {
+    const queryBuilder = new QueryBuilder(TourType.find(), query)
+
+    const tourTypes = await queryBuilder
+        .search(tourTypeSearchableFields)
+        .filter()
+        .sort()
+        .fields()
+        .paginate()
+
+    const [data, meta] = await Promise.all([
+        tourTypes.build(),
+        queryBuilder.getMeta()
+    ])
+
+    return {
+        data,
+        meta
+    }
+};
+const getSingleTourType = async (id: string) => {
+    const tourType = await TourType.findById(id);
+    return {
+        data: tourType
+    };
 };
 const updateTourType = async (id: string, payload: ITourType) => {
     const existingTourType = await TourType.findById(id);
@@ -166,7 +193,9 @@ export const TourService = {
     deleteTourType,
     updateTourType,
     getAllTourTypes,
+    getSingleTourType,
     getAllTours,
+    getSingleTour,
     updateTour,
     deleteTour,
 };
