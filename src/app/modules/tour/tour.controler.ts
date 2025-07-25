@@ -2,9 +2,14 @@ import { Request, Response } from 'express';
 import { catchAsync } from '../../utils/catchAsync';
 import { sendResponse } from '../../utils/sendResponse';
 import { TourService } from './tour.service';
+import { ITour } from './tour.interface';
 
 const createTour = catchAsync(async (req: Request, res: Response) => {
-    const result = await TourService.createTour(req.body);
+    const payload: ITour = {
+        ...req.body,
+        images: (req.files as Express.Multer.File[]).map(file => file.path)
+    }
+    const result = await TourService.createTour(payload);
     sendResponse(res, {
         statusCode: 201,
         success: true,
@@ -25,9 +30,24 @@ const getAllTours = catchAsync(async (req: Request, res: Response) => {
     });
 });
 
+const getSingleTour = catchAsync(async (req: Request, res: Response) => {
+    const slug = req.params.slug
+    const result = await TourService.getSingleTour(slug);
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: 'Tour retrieved successfully',
+        data: result,
+    });
+});
+
 const updateTour = catchAsync(async (req: Request, res: Response) => {
 
-    const result = await TourService.updateTour(req.params.id, req.body);
+    const payload: ITour = {
+        ...req.body,
+        images: (req.files as Express.Multer.File[]).map(file => file.path)
+    }
+    const result = await TourService.updateTour(req.params.id, payload);
     sendResponse(res, {
         statusCode: 200,
         success: true,
@@ -47,11 +67,23 @@ const deleteTour = catchAsync(async (req: Request, res: Response) => {
     });
 });
 const getAllTourTypes = catchAsync(async (req: Request, res: Response) => {
-    const result = await TourService.getAllTourTypes();
+    const query = req.query;
+    const result = await TourService.getAllTourTypes(query as Record<string, string>);
     sendResponse(res, {
         statusCode: 200,
         success: true,
         message: 'Tour types retrieved successfully',
+        data: result,
+    });
+});
+
+const getSingleTourType = catchAsync(async (req: Request, res: Response) => {
+    const id = req.params.id;
+    const result = await TourService.getSingleTourType(id);
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: 'Tour type retrieved successfully',
         data: result,
     });
 });
@@ -94,9 +126,11 @@ export const TourController = {
     createTour,
     createTourType,
     getAllTourTypes,
+    getSingleTourType,
     deleteTourType,
     updateTourType,
     getAllTours,
+    getSingleTour,
     updateTour,
     deleteTour,
 };
